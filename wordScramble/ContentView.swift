@@ -46,19 +46,29 @@ struct ContentView: View {
         guard answer.count > 0 else { return }
         
         guard isOriginal(word: answer) else {
-            alertTitle = "This has been used before"
-            messageTitle = ""
+            alertTitle = "Unoriginal"
+            messageTitle = "This has been used before"
+            showAlert = true
             return
         }
         
-        if usedWords.contains(answer){
+        guard isPossible(word: answer) else {
+            alertTitle = "Invalid entry"
+            messageTitle = "You can not use these letters to make this word"
+            showAlert = true
             return
-        } else {
+        }
+        
+        guard isReal(word: answer) else {
+            alertTitle = "Just guessing?"
+            messageTitle = "This is not a real word!"
+            showAlert = true
+            return
+        }
             withAnimation {
                 usedWords.insert(answer, at: 0)
             }
             newWord = ""
-        }
     }
     
     func startGame() {
