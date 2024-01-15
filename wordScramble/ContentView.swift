@@ -15,6 +15,8 @@ struct ContentView: View {
     @State private var alertTitle = ""
     @State private var messageTitle = ""
     @State private var showAlert = false
+    
+    @State private var score = 0
     var body: some View {
         NavigationStack {
             List {
@@ -23,30 +25,43 @@ struct ContentView: View {
                         .textInputAutocapitalization(.never)
                 } header: {
                     Text("Enter your word")
+                        .font(.headline)
                 }
-                Section(usedWords.count > 0 ? "Used Words" : "") {
+                Section {
                     ForEach(usedWords, id: \.self){ word in
                         HStack {
                             Image(systemName: "\(word.count).circle")
                             Text(word)
                         }
                     }
+                }header: {
+                    HStack{
+                        Text(usedWords.count > 0 ? "Used Words" : "")
+                        Spacer()
+                        Text(usedWords.count > 0 ? "Score: \(score)" : "")
+                    }                            .font(.headline)
                 }
-            }.onSubmit(addWord)
+            }
+            .onSubmit(addWord)
             .navigationTitle(rootWord)
             .onAppear(perform: startGame)
             .alert(alertTitle, isPresented: $showAlert) {} message: {
                 Text(messageTitle)
             }
             .toolbar {
-                Button("Restart", action: restartGame)
+                Button("Start Game", action: restartGame)
             }
         }
     }
     func addWord(){
         let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         
-        guard answer.count > 0 else { return }
+        guard validLengthAndOriginal(word: answer) else {
+            alertTitle = "Invalid entry"
+            messageTitle = "This answer is either less than 3 letters or the same as the rootword."
+            showAlert = true
+            return
+        }
         
         guard isOriginal(word: answer) else {
             alertTitle = "Unoriginal"
@@ -70,6 +85,7 @@ struct ContentView: View {
         }
             withAnimation {
                 usedWords.insert(answer, at: 0)
+                keepScore(word: answer)
             }
             newWord = ""
     }
@@ -77,6 +93,7 @@ struct ContentView: View {
     func restartGame() {
         startGame()
         usedWords.removeAll()
+        score = 0
     }
     
     func startGame() {
@@ -90,6 +107,20 @@ struct ContentView: View {
         }
         
         fatalError("There was a problem loading the words from the file in the bundle")
+    }
+    
+    func keepScore(word: String){
+        let points = word.count
+        score += points
+        if usedWords.count >= 5 {
+            score += 5
+        } else if usedWords.count >= 10 {
+            score += 10
+        }
+    }
+    
+    func validLengthAndOriginal(word: String) -> Bool {
+        word.count >= 3 && word != rootWord
     }
     
     func isOriginal(word: String) -> Bool {
