@@ -38,6 +38,9 @@ struct ContentView: View {
             .alert(alertTitle, isPresented: $showAlert) {} message: {
                 Text(messageTitle)
             }
+            .toolbar {
+                Button("Restart", action: restartGame)
+            }
         }
     }
     func addWord(){
@@ -69,6 +72,10 @@ struct ContentView: View {
                 usedWords.insert(answer, at: 0)
             }
             newWord = ""
+    }
+    
+    func restartGame() {
+        startGame()
     }
     
     func startGame() {
