@@ -24,7 +24,7 @@ struct ContentView: View {
                 } header: {
                     Text("Enter your word")
                 }
-                Section("Used Words") {
+                Section(usedWords.count > 0 ? "Used Words" : "") {
                     ForEach(usedWords, id: \.self){ word in
                         HStack {
                             Image(systemName: "\(word.count).circle")
@@ -76,6 +76,7 @@ struct ContentView: View {
     
     func restartGame() {
         startGame()
+        usedWords.removeAll()
     }
     
     func startGame() {
