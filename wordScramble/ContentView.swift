@@ -8,10 +8,95 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var usedWords: [String] = []
+    @State private var rootWord = "example"
+    @State private var newWord = ""
+    
+    @State private var alertTitle = ""
+    @State private var messageTitle = ""
+    @State private var showAlert = false
     var body: some View {
         NavigationStack {
-            
+            List {
+                Section{
+                    TextField("word", text: $newWord)
+                        .textInputAutocapitalization(.never)
+                } header: {
+                    Text("Enter your word")
+                }
+                Section("Used Words") {
+                    ForEach(usedWords, id: \.self){ word in
+                        HStack {
+                            Image(systemName: "\(word.count).circle")
+                            Text(word)
+                        }
+                    }
+                }
+            }.onSubmit(addWord)
+            .navigationTitle(rootWord)
+            .onAppear(perform: startGame)
+            .alert(alertTitle, isPresented: $showAlert) {} message: {
+                Text(messageTitle)
+            }
         }
+    }
+    func addWord(){
+        let answer = newWord.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        guard answer.count > 0 else { return }
+        
+        guard isOriginal(word: answer) else {
+            alertTitle = "This has been used before"
+            messageTitle = ""
+            return
+        }
+        
+        if usedWords.contains(answer){
+            return
+        } else {
+            withAnimation {
+                usedWords.insert(answer, at: 0)
+            }
+            newWord = ""
+        }
+    }
+    
+    func startGame() {
+        
+        if let fileUrlLoaded = Bundle.main.url(forResource: "start", withExtension: "txt"){
+            if let loadedContent = try? String(contentsOf: fileUrlLoaded){
+                let string = loadedContent.components(separatedBy: "\n")
+                rootWord = string.randomElement() ?? "wordless"
+                return
+            }
+        }
+        
+        fatalError("There was a problem loading the words from the file in the bundle")
+    }
+    
+    func isOriginal(word: String) -> Bool {
+        !usedWords.contains(word)
+    }
+    
+    func isPossible(word: String) -> Bool {
+        var possibleWord = rootWord
+        
+        for letter in word {
+            if let pos = possibleWord.firstIndex(of: letter) {
+                possibleWord.remove(at: pos)
+            } else {
+                return false
+            }
+        }
+        return true
+    }
+    func isReal(word: String) -> Bool {
+        let checker = UITextChecker()
+        let range = NSRange(location: 0, length: word.count)
+        
+        let wordCheckerRange = checker.rangeOfMisspelledWord(in: word, range: range, startingAt: 0, wrap: false, language: "en")
+        
+        return wordCheckerRange.location == NSNotFound
     }
 }
 
