@@ -35,12 +35,17 @@ struct ContentView: View {
                         }
                     }
                 }header: {
-                    HStack{
                         Text(usedWords.count > 0 ? "Used Words" : "")
-                        Spacer()
-                        Text(usedWords.count > 0 ? "Score: \(score)" : "")
-                    }                            .font(.headline)
                 }
+            }
+            .safeAreaInset(edge: .bottom) {
+                Text("Score: \(score)")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(.thinMaterial)
+                    .background(.blue)
+                    .foregroundStyle(.white)
+                    .font(.title).bold()
             }
             .onSubmit(addWord)
             .navigationTitle(rootWord)
